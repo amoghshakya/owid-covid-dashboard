@@ -8,13 +8,13 @@ but any package manager that supports Python 3.10+ should work.
 1. Clone the repository:
 
    ```bash
-   git clone
+   git clone https://github.com/amoghshakya/owid-covid-dashboard
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd data-visualization-dashboard
+   cd owid-covid-dashboard
    ```
 
 3. Install the dependencies:
