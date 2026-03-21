@@ -10,6 +10,12 @@ DATA_DIR = "data"
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Load the data from Kaggle.
+
+    Returns:
+        df: The cleaned and pre-processed DataFrame.
+        monthly_global: Monthly aggregated global data.
+        snapshot: Latest snapshot of each country.
+        pivot_cases: Pivot table of new cases by continent and year.
     """
     # check if data dir exists
     if os.path.exists(DATA_DIR):
@@ -36,6 +42,9 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
                 os.path.join(DATA_DIR, "covid_pivot_continent_year" + ".csv")
             )
             return df, monthly_global, snapshot, pivot_cases
+    else:
+        # prevent from throwing error
+        os.makedirs(DATA_DIR, exist_ok=True)
 
     dataset_handle = "caesarmario/our-world-in-data-covid19-dataset"
     try:
@@ -70,10 +79,21 @@ def prepare_date(
 
     df = df[df["continent"].notna()].copy()
 
+    # protect these columns from being dropped
+    # these are essential for analysis
+    essential_vars = [
+        "stringency_index",
+        "people_fully_vaccinated_per_hundred",  # vaccination didn't start until year 2, so a lot of values would be nil
+        "icu_patients_per_million",
+        "hospital_beds_per_thousand",
+    ]
+
     # set threshold for missing values
     threshold = 0.7  # 70% missing values
     missing_pct = df.isnull().mean()
-    cols_to_drop = missing_pct[missing_pct > threshold].index.tolist()
+    cols_to_drop = [
+        c for c in missing_pct[missing_pct > threshold].index if c not in essential_vars
+    ]
 
     # NOTE: dropping columns here
     df.drop(columns=cols_to_drop, inplace=True)
@@ -96,6 +116,8 @@ def prepare_date(
         "total_deaths_per_million",
         "reproduction_rate",
         "stringency_index",
+        "people_fully_vaccinated_per_hundred",
+        "icu_patients_per_million",
         "gdp_per_capita",
         "life_expectancy",
         "human_development_index",
@@ -111,7 +133,12 @@ def prepare_date(
     df = df[key_columns].copy()
 
     # fill daily cases and deaths with 0, this would likely mean no new cases
-    for col in ["new_cases", "new_deaths", "new_cases_smoothed", "new_deaths_smoothed"]:
+    for col in [
+        "new_cases",
+        "new_deaths",
+        "new_cases_smoothed",
+        "new_deaths_smoothed",
+    ]:
         if col in df.columns:
             df[col] = df[col].fillna(0)
 
