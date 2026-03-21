@@ -173,3 +173,86 @@ def create_continent_stacked_area(df: pd.DataFrame):
     fig.update_yaxes(tickformat=".0s", ticksuffix="M")
 
     return fig
+
+
+def create_cfr_trend_chart(filtered_data: pd.DataFrame, country_name: str):
+    """Case Fatality Rate trend over time with global average reference"""
+    fig = go.Figure()
+    
+    # Calculate global average CFR for reference
+    global_avg_cfr = filtered_data["case_fatality_rate"].mean()
+    
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_data["date"],
+            y=filtered_data["case_fatality_rate"],
+            name="Case Fatality Rate",
+            line=dict(color="#e74c3c", width=2.5),
+            fill="tozeroy",
+            fillcolor="rgba(231, 76, 60, 0.1)",
+        )
+    )
+    
+    # Add reference line for average
+    fig.add_hline(
+        y=global_avg_cfr,
+        line_dash="dash",
+        line_color="gray",
+        annotation_text=f"Country Avg: {global_avg_cfr:.2f}%",
+        annotation_position="right",
+    )
+    
+    fig.update_layout(
+        title=f"<b>Case Fatality Rate Trend: {country_name}</b>",
+        xaxis_title="Date",
+        yaxis_title="Case Fatality Rate (%)",
+        template="plotly_white",
+        hovermode="x unified",
+        showlegend=False,
+    )
+    
+    fig.update_yaxes(ticksuffix="%")
+    
+    return fig
+
+
+def create_cumulative_cases_deaths_chart(filtered_data: pd.DataFrame, country_name: str):
+    """Cumulative cases and deaths on dual-axis chart"""
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_data["date"],
+            y=filtered_data["total_cases"],
+            name="Total Cases",
+            line=dict(color="#3498db", width=2.5),
+            fill="tozeroy",
+            fillcolor="rgba(52, 152, 219, 0.1)",
+        ),
+        secondary_y=False,
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_data["date"],
+            y=filtered_data["total_deaths"],
+            name="Total Deaths",
+            line=dict(color="#e74c3c", width=2.5),
+            fill="tozeroy",
+            fillcolor="rgba(231, 76, 60, 0.1)",
+        ),
+        secondary_y=True,
+    )
+    
+    fig.update_layout(
+        title=f"<b>Cumulative Pandemic Burden: {country_name}</b>",
+        template="plotly_white",
+        hovermode="x unified",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    
+    fig.update_xaxes(title_text="Date")
+    fig.update_yaxes(title_text="Total Cases", secondary_y=False, tickformat=".2s")
+    fig.update_yaxes(title_text="Total Deaths", secondary_y=True, tickformat=".2s")
+    
+    return fig

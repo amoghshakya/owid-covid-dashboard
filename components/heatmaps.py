@@ -1,5 +1,4 @@
 import plotly.express as px
-import numpy as np
 import pandas as pd
 
 
@@ -36,7 +35,7 @@ def create_correlation_heatmap(snapshot_data: pd.DataFrame):
         zmin=-1,
         zmax=1,
         title="<b>Correlation Heatmap — COVID-19 & Socioeconomic Variables</b>",
-        labels=dict(color="Pearson Correlation"),
+        labels=dict(color="Correlation"),
     )
 
     fig.update_layout(

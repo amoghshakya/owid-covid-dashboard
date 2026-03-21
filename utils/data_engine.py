@@ -46,6 +46,8 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
         # prevent from throwing error
         os.makedirs(DATA_DIR, exist_ok=True)
 
+    # first time run
+    print("Missing data files. Downloading dataset from Kaggle...")
     dataset_handle = "caesarmario/our-world-in-data-covid19-dataset"
     try:
         path = kagglehub.dataset_download(dataset_handle)
@@ -59,6 +61,7 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
     # filter data
     # df["date"] = pd.to_datetime(df["date"])
 
+    print("Dataset downloaded. Preprocessing data...")
     df, monthly_global, snapshot, pivot_cases = prepare_date(df)
 
     return df, monthly_global, snapshot, pivot_cases
@@ -75,7 +78,7 @@ def prepare_date(
     df["month"] = df["date"].dt.month
     df["month_name"] = df["date"].dt.strftime("%b")
 
-    aggregated_locations = df[df["continent"].isna()]["location"].unique()
+    # aggregated_locations = df[df["continent"].isna()]["location"].unique()
 
     df = df[df["continent"].notna()].copy()
 

@@ -49,7 +49,7 @@ def create_gdp_mortality_bubble(snapshot_data: pd.DataFrame):
     fig.update_layout(
         xaxis=dict(tickformat="$,.0f", gridcolor="lightgray"),
         yaxis=dict(gridcolor="lightgray"),
-        legend=dict(title="Continent", yanchor="top", y=0.99, xanchor="left", x=0.01),
+        legend=dict(title="Continent", yanchor="top", y=0.99, xanchor="left", x=0.99),
         margin=dict(l=50, r=50, t=100, b=50),
         height=700,
     )
