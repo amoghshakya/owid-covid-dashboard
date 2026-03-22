@@ -1,4 +1,5 @@
 import plotly.express as px
+import plotly.graph_objects as go
 import pandas as pd
 
 
@@ -89,4 +90,50 @@ def create_top_countries_death(df: pd.DataFrame):
     fig.update_xaxes(
         tickformat=".2s",
     )
+    return fig
+
+
+def create_resilience_chart(snapshot: pd.DataFrame, selected_country: str):
+    """
+    Takes snapshot df
+    Vertical bar comparing country Life Expectancy vs Global Average
+    """
+    country_val = snapshot[snapshot["location"] == selected_country][
+        "life_expectancy"
+    ].values[0]
+    global_avg = snapshot["life_expectancy"].mean()
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=[selected_country],
+            y=[country_val],
+            orientation="v",
+            marker_color="#3498db",
+            name=selected_country,
+            text=f"{country_val:.1f} Years",
+            textposition="auto",
+            width=0.4,
+        )
+    )
+
+    fig.add_hline(
+        y=global_avg,
+        line_dash="dash",
+        line_color="red",
+        line_width=2,
+        annotation_text=f"Global Avg: {global_avg:.1f}",
+        annotation_position="top left",
+    )
+
+    fig.update_layout(
+        title=f"<b>Life Expectancy Resilience: {selected_country}</b>",
+        xaxis_title="",
+        yaxis_title="Life Expectancy (Years)",
+        yaxis=dict(range=[50, 95]),
+        template="plotly_white",
+        margin=dict(l=50, r=50, t=80, b=50),
+    )
+
     return fig

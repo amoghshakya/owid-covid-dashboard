@@ -51,6 +51,7 @@ def create_reproduction_dist(df: pd.DataFrame, selected_country: str):
         barmode="overlay",
         template="plotly_white",
         showlegend=True,
+        legend=dict(orientation="v", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
 
     return fig

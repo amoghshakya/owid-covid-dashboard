@@ -21,7 +21,6 @@ def create_cases_death_chart(filtered_data: pd.DataFrame, country_name: str):
         )
     )
 
-    # 2. New Deaths (Secondary visual on same axis)
     fig.add_trace(
         go.Scatter(
             x=filtered_data["date"],
@@ -57,12 +56,13 @@ def create_cases_death_chart(filtered_data: pd.DataFrame, country_name: str):
         )
 
     fig.update_layout(
+        xaxis=dict(rangeslider=dict(visible=True)),
         xaxis_title="Date",
         yaxis_title="Count (7-day avg)",
         title=f"<b>COVID-19 Trends: {country_name}</b>",
         template="plotly_white",
         hovermode="x unified",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        legend=dict(orientation="v", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
 
     fig.update_yaxes(ticksuffix=" ", exponentformat="SI")
@@ -104,6 +104,7 @@ def create_policy_vax_mortality_chart(filtered_data: pd.DataFrame, country_name:
         secondary_y=True,
     )
     fig.update_layout(
+        xaxis=dict(rangeslider=dict(visible=True)),
         title_text=f"<b>Policy & Vaccination vs. Mortality: {country_name}</b>",
         template="plotly_white",
         legend=dict(orientation="v", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -161,12 +162,12 @@ def create_continent_stacked_area(df: pd.DataFrame):
     )
 
     fig.update_layout(
+        xaxis=dict(rangeslider=dict(visible=True)),
         hovermode="x unified",  # Vital for stacked charts: shows all continent values at once
         xaxis_title="Date",
         yaxis_title="New Cases (Millions)",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=50, r=50, t=100, b=50),
-        height=600,
     )
 
     # Format Y-axis to show Millions (M)
@@ -178,10 +179,10 @@ def create_continent_stacked_area(df: pd.DataFrame):
 def create_cfr_trend_chart(filtered_data: pd.DataFrame, country_name: str):
     """Case Fatality Rate trend over time with global average reference"""
     fig = go.Figure()
-    
+
     # Calculate global average CFR for reference
     global_avg_cfr = filtered_data["case_fatality_rate"].mean()
-    
+
     fig.add_trace(
         go.Scatter(
             x=filtered_data["date"],
@@ -192,7 +193,7 @@ def create_cfr_trend_chart(filtered_data: pd.DataFrame, country_name: str):
             fillcolor="rgba(231, 76, 60, 0.1)",
         )
     )
-    
+
     # Add reference line for average
     fig.add_hline(
         y=global_avg_cfr,
@@ -201,8 +202,9 @@ def create_cfr_trend_chart(filtered_data: pd.DataFrame, country_name: str):
         annotation_text=f"Country Avg: {global_avg_cfr:.2f}%",
         annotation_position="right",
     )
-    
+
     fig.update_layout(
+        xaxis=dict(rangeslider=dict(visible=True)),
         title=f"<b>Case Fatality Rate Trend: {country_name}</b>",
         xaxis_title="Date",
         yaxis_title="Case Fatality Rate (%)",
@@ -210,16 +212,18 @@ def create_cfr_trend_chart(filtered_data: pd.DataFrame, country_name: str):
         hovermode="x unified",
         showlegend=False,
     )
-    
+
     fig.update_yaxes(ticksuffix="%")
-    
+
     return fig
 
 
-def create_cumulative_cases_deaths_chart(filtered_data: pd.DataFrame, country_name: str):
+def create_cumulative_cases_deaths_chart(
+    filtered_data: pd.DataFrame, country_name: str
+):
     """Cumulative cases and deaths on dual-axis chart"""
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    
+
     fig.add_trace(
         go.Scatter(
             x=filtered_data["date"],
@@ -231,7 +235,7 @@ def create_cumulative_cases_deaths_chart(filtered_data: pd.DataFrame, country_na
         ),
         secondary_y=False,
     )
-    
+
     fig.add_trace(
         go.Scatter(
             x=filtered_data["date"],
@@ -243,16 +247,106 @@ def create_cumulative_cases_deaths_chart(filtered_data: pd.DataFrame, country_na
         ),
         secondary_y=True,
     )
-    
+
     fig.update_layout(
+        xaxis=dict(rangeslider=dict(visible=True)),
         title=f"<b>Cumulative Pandemic Burden: {country_name}</b>",
         template="plotly_white",
         hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
-    
+
     fig.update_xaxes(title_text="Date")
     fig.update_yaxes(title_text="Total Cases", secondary_y=False, tickformat=".2s")
     fig.update_yaxes(title_text="Total Deaths", secondary_y=True, tickformat=".2s")
-    
+
+    return fig
+
+
+def create_unified_country_audit(filtered_data: pd.DataFrame, country_name: str):
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.1,
+        subplot_titles=(
+            f"<b>Cumulative Pandemic Burden: {country_name}</b>",
+            "<b>Case Fatality Rate Severity (%)</b>",
+        ),
+        specs=[[{"secondary_y": True}], [{"secondary_y": False}]],
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_data["date"],
+            y=filtered_data["total_cases"],
+            name="Total Cases",
+            line=dict(color="#3498db", width=2),
+            fill="tozeroy",
+            fillcolor="rgba(52, 152, 219, 0.05)",
+        ),
+        row=1,
+        col=1,
+        secondary_y=False,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_data["date"],
+            y=filtered_data["total_deaths"],
+            name="Total Deaths",
+            line=dict(color="#e74c3c", width=2),
+            fill="tozeroy",
+            fillcolor="rgba(231, 76, 60, 0.05)",
+        ),
+        row=1,
+        col=1,
+        secondary_y=True,
+    )
+
+    global_avg_cfr = filtered_data["case_fatality_rate"].mean()
+
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_data["date"],
+            y=filtered_data["case_fatality_rate"],
+            name="CFR %",
+            line=dict(color="#2c3e50", width=2.5),
+        ),
+        row=2,
+        col=1,
+    )
+
+    fig.add_hline(
+        y=global_avg_cfr,
+        line_dash="dash",
+        line_color="gray",
+        annotation_text=f"Avg: {global_avg_cfr:.2f}%",
+        annotation_position="right",
+        row=2,
+        col=1,
+    )
+
+    fig.update_layout(
+        height=700,
+        template="plotly_white",
+        hovermode="x unified",
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=1.1, xanchor="right", x=1),
+        xaxis=dict(rangeslider=dict(visible=False)),
+        xaxis2=dict(
+            title="Date",
+            rangeslider=dict(visible=True, thickness=0.08),
+            type="date",
+        ),
+    )
+
+    fig.update_yaxes(
+        title_text="Cases", tickformat=".2s", row=1, col=1, secondary_y=False
+    )
+    fig.update_yaxes(
+        title_text="Deaths", tickformat=".2s", row=1, col=1, secondary_y=True
+    )
+    fig.update_yaxes(title_text="CFR (%)", ticksuffix="%", row=2, col=1)
+
     return fig

@@ -42,7 +42,6 @@ def create_correlation_heatmap(snapshot_data: pd.DataFrame):
         template="plotly_white",
         xaxis_tickangle=-35,
         margin=dict(l=50, r=50, t=80, b=50),
-        height=700,
         hoverlabel=dict(bgcolor="white", font_size=12),
     )
 
