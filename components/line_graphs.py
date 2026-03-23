@@ -171,7 +171,7 @@ def create_continent_stacked_area(df: pd.DataFrame):
     )
 
     # Format Y-axis to show Millions (M)
-    fig.update_yaxes(tickformat=".0s", ticksuffix="M")
+    fig.update_yaxes(tickformat=".0s")
 
     return fig
 

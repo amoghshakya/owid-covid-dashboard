@@ -157,7 +157,6 @@ app.layout = dbc.Container(
                                                         dcc.Graph(
                                                             id="covid-graph",
                                                             style={"height": "400px"},
-                                                            config={"displayModeBar": False},
                                                         )
                                                     ),
                                                 ],
@@ -177,7 +176,6 @@ app.layout = dbc.Container(
                                                         dcc.Graph(
                                                             id="resilience",
                                                             style={"height": "400px"},
-                                                            config={"displayModeBar": False},
                                                         )
                                                     ),
                                                 ],
@@ -203,7 +201,6 @@ app.layout = dbc.Container(
                                                         dcc.Graph(
                                                             id="policy-vax-mortality-graph",
                                                             style={"height": "320px"},
-                                                            config={"displayModeBar": False},
                                                         )
                                                     ),
                                                 ],
@@ -223,7 +220,6 @@ app.layout = dbc.Container(
                                                         dcc.Graph(
                                                             id="reproduction-dist",
                                                             style={"height": "320px"},
-                                                            config={"displayModeBar": False},
                                                         ),
                                                     ]
                                                 ),
@@ -247,8 +243,7 @@ app.layout = dbc.Container(
                                                     ),
                                                     dcc.Graph(
                                                         id="cfr-cumulative-chart",
-                                                        style={"height": "320px"},
-                                                        config={"displayModeBar": False},
+                                                        style={"height": "500px"},
                                                     ),
                                                 ]
                                             ),
@@ -292,7 +287,6 @@ app.layout = dbc.Container(
                                                     figure=create_deaths_per_mill_map(
                                                         snapshot
                                                     ),
-                                                    config={"displayModeBar": False},
                                                     style={"height": "450px"},
                                                 ),
                                             ),
@@ -309,9 +303,6 @@ app.layout = dbc.Container(
                                                 dbc.CardBody(
                                                     dcc.Graph(
                                                         figure=top_deaths,
-                                                        config={
-                                                            "displayModeBar": False
-                                                        },
                                                         style={"height": "380px"},
                                                     )
                                                 ),
@@ -328,9 +319,6 @@ app.layout = dbc.Container(
                                                         figure=create_correlation_heatmap(
                                                             snapshot
                                                         ),
-                                                        config={
-                                                            "displayModeBar": False
-                                                        },
                                                         style={"height": "380px"},
                                                     )
                                                 ),
@@ -351,7 +339,6 @@ app.layout = dbc.Container(
                                                     figure=create_continent_stacked_area(
                                                         df
                                                     ),
-                                                    config={"displayModeBar": False},
                                                     style={"height": "380px"},
                                                 )
                                             ),
@@ -369,7 +356,6 @@ app.layout = dbc.Container(
                                                     figure=create_gdp_mortality_bubble(
                                                         snapshot
                                                     ),
-                                                    config={"displayModeBar": False},
                                                     style={"height": "450px"},
                                                 )
                                             ),
