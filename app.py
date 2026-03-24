@@ -12,7 +12,6 @@ from components.line_graphs import (
     create_continent_stacked_area,
     create_cfr_trend_chart,
     create_cumulative_cases_deaths_chart,
-    create_unified_country_audit,
 )
 from dash import Dash, html, dcc, callback, Output, Input, State, callback_context
 import dash_bootstrap_components as dbc
@@ -28,17 +27,17 @@ top_deaths = create_top_countries_death(snapshot)
 app.layout = dbc.Container(
     [
         # Header
-        # dbc.Row(
-        #     dbc.Col(
-        #         [
-        #             html.H1(
-        #                 "COVID-19 Global Dashboard",
-        #                 className="text-center mt-4 mb-4",
-        #                 style={"fontWeight": "700", "color": "#2c3e50"},
-        #             ),
-        #         ]
-        #     )
-        # ),
+        dbc.Row(
+            dbc.Col(
+                [
+                    html.H1(
+                        "COVID-19 Global Dashboard",
+                        className="text-center mt-4 mb-4",
+                        style={"fontWeight": "700", "color": "#2c3e50"},
+                    ),
+                ]
+            )
+        ),
         dbc.Row(
             [
                 # Sidebar
@@ -214,11 +213,11 @@ app.layout = dbc.Container(
                                                 dbc.CardBody(
                                                     [
                                                         html.Small(
-                                                            "Reproduction Rate (R)",
+                                                            "Case Fatality Rate Trend",
                                                             className="text-muted fw-bold",
                                                         ),
                                                         dcc.Graph(
-                                                            id="reproduction-dist",
+                                                            id="cfr-cumulative-chart",
                                                             style={"height": "320px"},
                                                         ),
                                                     ]
@@ -238,12 +237,12 @@ app.layout = dbc.Container(
                                             dbc.CardBody(
                                                 [
                                                     html.Small(
-                                                        "Cumulative Growth",
+                                                        "Reproduction Rate Distribution",
                                                         className="text-muted fw-bold",
                                                     ),
                                                     dcc.Graph(
-                                                        id="cfr-cumulative-chart",
-                                                        style={"height": "500px"},
+                                                        id="reproduction-dist",
+                                                        style={"height": "400px"},
                                                     ),
                                                 ]
                                             ),
@@ -412,7 +411,7 @@ def update_country_charts(selected_country):
     fig1 = create_cases_death_chart(filtered_data, selected_country)
     fig2 = create_policy_vax_mortality_chart(filtered_data, selected_country)
     fig3 = create_reproduction_dist(filtered_data, selected_country)
-    fig5 = create_unified_country_audit(filtered_data, selected_country)
+    fig5 = create_cfr_trend_chart(filtered_data, selected_country)
     fig6 = create_resilience_chart(snapshot, selected_country)
 
     latest = filtered_data.dropna(subset=["total_cases", "total_deaths"]).iloc[-1]

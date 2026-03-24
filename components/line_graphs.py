@@ -265,15 +265,15 @@ def create_cumulative_cases_deaths_chart(
 
 def create_unified_country_audit(filtered_data: pd.DataFrame, country_name: str):
     fig = make_subplots(
-        rows=2,
-        cols=1,
+        rows=1,
+        cols=2,
         shared_xaxes=True,
-        vertical_spacing=0.1,
+        horizontal_spacing=0.1,
         subplot_titles=(
             f"<b>Cumulative Pandemic Burden: {country_name}</b>",
             "<b>Case Fatality Rate Severity (%)</b>",
         ),
-        specs=[[{"secondary_y": True}], [{"secondary_y": False}]],
+        specs=[[{"secondary_y": True}, {"secondary_y": False}]],
     )
 
     fig.add_trace(
@@ -313,8 +313,8 @@ def create_unified_country_audit(filtered_data: pd.DataFrame, country_name: str)
             name="CFR %",
             line=dict(color="#2c3e50", width=2.5),
         ),
-        row=2,
-        col=1,
+        row=1,
+        col=2,
     )
 
     fig.add_hline(
@@ -323,23 +323,20 @@ def create_unified_country_audit(filtered_data: pd.DataFrame, country_name: str)
         line_color="gray",
         annotation_text=f"Avg: {global_avg_cfr:.2f}%",
         annotation_position="right",
-        row=2,
-        col=1,
+        row=1,
+        col=2,
     )
 
     fig.update_layout(
-        height=700,
+        height=500,
         template="plotly_white",
         hovermode="x unified",
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.1, xanchor="right", x=1),
-        xaxis=dict(rangeslider=dict(visible=False)),
-        xaxis2=dict(
-            title="Date",
-            rangeslider=dict(visible=True, thickness=0.08),
-            type="date",
-        ),
     )
+
+    fig.update_xaxes(title_text="Date", rangeslider=dict(visible=True, thickness=0.08), row=1, col=1)
+    fig.update_xaxes(title_text="Date", rangeslider=dict(visible=True, thickness=0.08), row=1, col=2)
 
     fig.update_yaxes(
         title_text="Cases", tickformat=".2s", row=1, col=1, secondary_y=False
@@ -347,6 +344,6 @@ def create_unified_country_audit(filtered_data: pd.DataFrame, country_name: str)
     fig.update_yaxes(
         title_text="Deaths", tickformat=".2s", row=1, col=1, secondary_y=True
     )
-    fig.update_yaxes(title_text="CFR (%)", ticksuffix="%", row=2, col=1)
+    fig.update_yaxes(title_text="CFR (%)", ticksuffix="%", row=1, col=2)
 
     return fig
