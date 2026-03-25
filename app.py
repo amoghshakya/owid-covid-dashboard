@@ -11,14 +11,19 @@ from components.line_graphs import (
     create_cases_death_chart,
     create_continent_stacked_area,
     create_cfr_trend_chart,
-    create_cumulative_cases_deaths_chart,
 )
-from dash import Dash, html, dcc, callback, Output, Input, State, callback_context
+from dash import Dash, html, dcc, callback, Output, Input, callback_context
 import dash_bootstrap_components as dbc
 
 from utils.data_engine import load_data
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+app = Dash(
+    __name__,
+    external_stylesheets=[
+        dbc.themes.LUX,
+    ],
+    assets_folder="./static",
+)
 df, monthly_global, snapshot, pivot_cases = load_data()
 
 # static graphs that don't need interactivity
@@ -26,17 +31,43 @@ top_deaths = create_top_countries_death(snapshot)
 
 app.layout = dbc.Container(
     [
-        # Header
-        dbc.Row(
-            dbc.Col(
-                [
-                    html.H1(
-                        "COVID-19 Global Dashboard",
-                        className="text-center mt-4 mb-4",
-                        style={"fontWeight": "700", "color": "#2c3e50"},
-                    ),
-                ]
-            )
+        # Header with controls
+        html.Div(
+            [
+                dbc.Button(
+                    "☰",
+                    id="sidebar-toggle",
+                    color="light",
+                    outline=True,
+                    size="sm",
+                    style={"fontSize": "20px", "width": "50px", "height": "50px"},
+                ),
+                html.H1(
+                    "COVID-19 Global Dashboard",
+                    className="mb-0",
+                    style={"fontWeight": "700", "color": "#2c3e50"},
+                ),
+                dcc.Dropdown(
+                    df["location"].unique(),
+                    value="Nepal",
+                    id="country-dropdown",
+                    style={
+                        "width": "250px",
+                        "fontSize": "14px",
+                    },
+                    clearable=False,
+                    className="shadow-sm",
+                    searchable=True,
+                    maxHeight=400,
+                ),
+            ],
+            style={
+                "display": "flex",
+                "justifyContent": "space-between",
+                "alignItems": "center",
+                "padding": "20px 0",
+            },
+            className="mb-4",
         ),
         dbc.Row(
             [
@@ -89,41 +120,6 @@ app.layout = dbc.Container(
                         # Country Analysis Section
                         html.Div(
                             [
-                                # Header Control Row
-                                html.Div(
-                                    [
-                                        dbc.Button(
-                                            "☰",
-                                            id="sidebar-toggle",
-                                            color="light",
-                                            outline=True,
-                                            size="sm",
-                                            style={"fontSize": "14px", "width": "40px"},
-                                        ),
-                                        dbc.InputGroup(
-                                            [
-                                                dcc.Dropdown(
-                                                    df["location"].unique(),
-                                                    "Nepal",
-                                                    id="country-dropdown",
-                                                    style={
-                                                        "width": "250px",
-                                                        "fontSize": "14px",
-                                                    },
-                                                    clearable=False,
-                                                ),
-                                            ],
-                                            className="shadow-sm",
-                                            style={"width": "auto"},
-                                        ),
-                                    ],
-                                    style={
-                                        "display": "flex",
-                                        "justifyContent": "space-between",
-                                        "alignItems": "center",
-                                    },
-                                    className="mb-4",
-                                ),
                                 # KPI rows
                                 dbc.Row(
                                     [
@@ -142,115 +138,147 @@ app.layout = dbc.Container(
                                     ],
                                     className="mb-3",
                                 ),
-                                # Row 2
-                                dbc.Row(
-                                    [
-                                        dbc.Col(
-                                            dbc.Card(
-                                                [
-                                                    dbc.CardHeader(
-                                                        "Epidemiological Timeline",
-                                                        className="fw-bold",
-                                                    ),
-                                                    dbc.CardBody(
-                                                        dcc.Graph(
-                                                            id="covid-graph",
-                                                            style={"height": "400px"},
-                                                        )
-                                                    ),
-                                                ],
-                                                className="shadow-sm h-100",
-                                            ),
-                                            width=12,
-                                            lg=8,
-                                        ),
-                                        dbc.Col(
-                                            dbc.Card(
-                                                [
-                                                    dbc.CardHeader(
-                                                        "Health Resilience",
-                                                        className="fw-bold",
-                                                    ),
-                                                    dbc.CardBody(
-                                                        dcc.Graph(
-                                                            id="resilience",
-                                                            style={"height": "400px"},
-                                                        )
-                                                    ),
-                                                ],
-                                                className="shadow-sm h-100",
-                                            ),
-                                            width=12,
-                                            lg=4,
-                                        ),
-                                    ],
-                                    className="mb-3 g-3",
-                                ),
-                                # Row 3
-                                dbc.Row(
-                                    [
-                                        dbc.Col(
-                                            dbc.Card(
-                                                [
-                                                    dbc.CardHeader(
-                                                        "Policy Stringency vs. Vaccination & Mortality",
-                                                        className="fw-bold",
-                                                    ),
-                                                    dbc.CardBody(
-                                                        dcc.Graph(
-                                                            id="policy-vax-mortality-graph",
-                                                            style={"height": "320px"},
-                                                        )
-                                                    ),
-                                                ],
-                                                className="shadow-sm h-100",
-                                            ),
-                                            width=12,
-                                            lg=6,
-                                        ),
-                                        dbc.Col(
-                                            dbc.Card(
-                                                dbc.CardBody(
+                                # Tabbed Charts
+                                dcc.Tabs(
+                                    id="country-tabs",
+                                    value="tab-overview",
+                                    children=[
+                                        dcc.Tab(
+                                            label="Overview",
+                                            value="tab-overview",
+                                            children=[
+                                                dbc.Row(
                                                     [
-                                                        html.Small(
-                                                            "Case Fatality Rate Trend",
-                                                            className="text-muted fw-bold",
+                                                        dbc.Col(
+                                                            dbc.Card(
+                                                                [
+                                                                    dbc.CardHeader(
+                                                                        "Epidemiological Timeline",
+                                                                        className="fw-bold",
+                                                                    ),
+                                                                    dbc.CardBody(
+                                                                        dcc.Graph(
+                                                                            id="covid-graph",
+                                                                            style={
+                                                                                "height": "500px"
+                                                                            },
+                                                                        )
+                                                                    ),
+                                                                ],
+                                                                className="shadow-sm h-100",
+                                                            ),
+                                                            width=12,
+                                                            lg=8,
                                                         ),
-                                                        dcc.Graph(
-                                                            id="cfr-cumulative-chart",
-                                                            style={"height": "320px"},
+                                                        dbc.Col(
+                                                            dbc.Card(
+                                                                [
+                                                                    dbc.CardHeader(
+                                                                        "Health Resilience",
+                                                                        className="fw-bold",
+                                                                    ),
+                                                                    dbc.CardBody(
+                                                                        dcc.Graph(
+                                                                            id="resilience",
+                                                                            style={
+                                                                                "height": "500px"
+                                                                            },
+                                                                        )
+                                                                    ),
+                                                                ],
+                                                                className="shadow-sm h-100",
+                                                            ),
+                                                            width=12,
+                                                            lg=4,
                                                         ),
-                                                    ]
+                                                    ],
+                                                    className="mb-3 g-3 mt-2",
                                                 ),
-                                                className="shadow-sm h-100",
-                                            ),
-                                            width=12,
-                                            lg=6,
+                                            ],
+                                        ),
+                                        dcc.Tab(
+                                            label="Policy & Mortality",
+                                            value="tab-policy",
+                                            children=[
+                                                dbc.Row(
+                                                    [
+                                                        dbc.Col(
+                                                            dbc.Card(
+                                                                [
+                                                                    dbc.CardHeader(
+                                                                        "Policy Stringency vs. Vaccination & Mortality",
+                                                                        className="fw-bold",
+                                                                    ),
+                                                                    dbc.CardBody(
+                                                                        dcc.Graph(
+                                                                            id="policy-vax-mortality-graph",
+                                                                            style={
+                                                                                "height": "400px"
+                                                                            },
+                                                                        )
+                                                                    ),
+                                                                ],
+                                                                className="shadow-sm h-100",
+                                                            ),
+                                                            width=12,
+                                                            lg=6,
+                                                        ),
+                                                        dbc.Col(
+                                                            dbc.Card(
+                                                                [
+                                                                    dbc.CardHeader(
+                                                                        "Case Fatality Rate Trend",
+                                                                        className="fw-bold",
+                                                                    ),
+                                                                    dbc.CardBody(
+                                                                        dcc.Graph(
+                                                                            id="cfr-cumulative-chart",
+                                                                            style={
+                                                                                "height": "400px"
+                                                                            },
+                                                                        )
+                                                                    ),
+                                                                ],
+                                                                className="shadow-sm h-100",
+                                                            ),
+                                                            width=12,
+                                                            lg=6,
+                                                        ),
+                                                    ],
+                                                    className="mb-3 g-3 mt-2",
+                                                ),
+                                            ],
+                                        ),
+                                        dcc.Tab(
+                                            label="Reproduction Rate",
+                                            value="tab-reproduction",
+                                            children=[
+                                                dbc.Row(
+                                                    dbc.Col(
+                                                        dbc.Card(
+                                                            [
+                                                                dbc.CardHeader(
+                                                                    "Reproduction Rate Distribution",
+                                                                    className="fw-bold",
+                                                                ),
+                                                                dbc.CardBody(
+                                                                    dcc.Graph(
+                                                                        id="reproduction-dist",
+                                                                        style={
+                                                                            "height": "450px"
+                                                                        },
+                                                                    )
+                                                                ),
+                                                            ],
+                                                            className="shadow-sm",
+                                                        ),
+                                                        width=12,
+                                                    ),
+                                                    className="mb-3 mt-2",
+                                                ),
+                                            ],
                                         ),
                                     ],
-                                    className="mb-3 g-3",
-                                ),
-                                # Row 4
-                                dbc.Row(
-                                    dbc.Col(
-                                        dbc.Card(
-                                            dbc.CardBody(
-                                                [
-                                                    html.Small(
-                                                        "Reproduction Rate Distribution",
-                                                        className="text-muted fw-bold",
-                                                    ),
-                                                    dcc.Graph(
-                                                        id="reproduction-dist",
-                                                        style={"height": "400px"},
-                                                    ),
-                                                ]
-                                            ),
-                                            className="shadow-sm",
-                                        ),
-                                        width=12,
-                                    ),
-                                    className="mb-3",
                                 ),
                             ],
                             id="country-content",
@@ -258,111 +286,159 @@ app.layout = dbc.Container(
                         # Global Insights Section (initially hidden)
                         html.Div(
                             [
-                                # Header Control Row for Global
-                                html.Div(
-                                    [
-                                        dbc.Button(
-                                            "☰",
-                                            id="sidebar-toggle-global",
-                                            color="light",
-                                            outline=True,
-                                            size="sm",
-                                            style={"fontSize": "14px", "width": "40px"},
-                                        ),
-                                        html.H3("Global Insights", className="fw-bold"),
-                                    ],
-                                    style={
-                                        "display": "flex",
-                                        "justifyContent": "space-between",
-                                        "alignItems": "center",
-                                    },
-                                    className="mb-4",
-                                ),
-                                dbc.Row(
-                                    dbc.Col(
-                                        dbc.Card(
-                                            dbc.CardBody(
-                                                dcc.Graph(
-                                                    figure=create_deaths_per_mill_map(
-                                                        snapshot
-                                                    ),
-                                                    style={"height": "450px"},
-                                                ),
-                                            ),
-                                            className="shadow-sm",
-                                        ),
-                                        width=12,
-                                        className="mb-3",
-                                    )
-                                ),
-                                dbc.Row(
-                                    [
-                                        dbc.Col(
-                                            dbc.Card(
-                                                dbc.CardBody(
-                                                    dcc.Graph(
-                                                        figure=top_deaths,
-                                                        style={"height": "380px"},
-                                                    )
-                                                ),
-                                                className="shadow-sm h-100",
-                                            ),
-                                            width=12,
-                                            lg=6,
-                                            className="mb-3",
-                                        ),
-                                        dbc.Col(
-                                            dbc.Card(
-                                                dbc.CardBody(
-                                                    dcc.Graph(
-                                                        figure=create_correlation_heatmap(
-                                                            snapshot
+                                # Tabbed Global Charts
+                                dcc.Tabs(
+                                    id="global-tabs",
+                                    value="tab-map",
+                                    children=[
+                                        dcc.Tab(
+                                            label="Global Map",
+                                            value="tab-map",
+                                            children=[
+                                                dbc.Row(
+                                                    dbc.Col(
+                                                        dbc.Card(
+                                                            dbc.CardBody(
+                                                                dcc.Graph(
+                                                                    figure=create_deaths_per_mill_map(
+                                                                        snapshot
+                                                                    ),
+                                                                    style={
+                                                                        "height": "500px"
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            className="shadow-sm",
                                                         ),
-                                                        style={"height": "380px"},
-                                                    )
+                                                        width=12,
+                                                        className="mb-3",
+                                                    ),
+                                                    className="mt-2",
                                                 ),
-                                                className="shadow-sm h-100",
-                                            ),
-                                            width=12,
-                                            lg=6,
-                                            className="mb-3",
+                                            ],
+                                        ),
+                                        dcc.Tab(
+                                            label="Country Comparisons",
+                                            value="tab-countries",
+                                            children=[
+                                                dbc.Row(
+                                                    [
+                                                        dbc.Col(
+                                                            dbc.Card(
+                                                                [
+                                                                    dbc.CardHeader(
+                                                                        "Top Countries by Deaths",
+                                                                        className="fw-bold",
+                                                                    ),
+                                                                    dbc.CardBody(
+                                                                        dcc.Graph(
+                                                                            figure=top_deaths,
+                                                                            style={
+                                                                                "height": "400px"
+                                                                            },
+                                                                        )
+                                                                    ),
+                                                                ],
+                                                                className="shadow-sm h-100",
+                                                            ),
+                                                            width=12,
+                                                            lg=6,
+                                                            className="mb-3",
+                                                        ),
+                                                        dbc.Col(
+                                                            dbc.Card(
+                                                                [
+                                                                    dbc.CardHeader(
+                                                                        "Correlation Heatmap",
+                                                                        className="fw-bold",
+                                                                    ),
+                                                                    dbc.CardBody(
+                                                                        dcc.Graph(
+                                                                            figure=create_correlation_heatmap(
+                                                                                snapshot
+                                                                            ),
+                                                                            style={
+                                                                                "height": "400px"
+                                                                            },
+                                                                        )
+                                                                    ),
+                                                                ],
+                                                                className="shadow-sm h-100",
+                                                            ),
+                                                            width=12,
+                                                            lg=6,
+                                                            className="mb-3",
+                                                        ),
+                                                    ],
+                                                    className="g-3 mt-2",
+                                                ),
+                                            ],
+                                        ),
+                                        dcc.Tab(
+                                            label="Continental Trends",
+                                            value="tab-continents",
+                                            children=[
+                                                dbc.Row(
+                                                    dbc.Col(
+                                                        dbc.Card(
+                                                            [
+                                                                dbc.CardHeader(
+                                                                    "Continental Stacked Area",
+                                                                    className="fw-bold",
+                                                                ),
+                                                                dbc.CardBody(
+                                                                    dcc.Graph(
+                                                                        figure=create_continent_stacked_area(
+                                                                            df
+                                                                        ),
+                                                                        style={
+                                                                            "height": "450px"
+                                                                        },
+                                                                    )
+                                                                ),
+                                                            ],
+                                                            className="shadow-sm",
+                                                        ),
+                                                        width=12,
+                                                        className="mb-3",
+                                                    ),
+                                                    className="mt-2",
+                                                ),
+                                            ],
+                                        ),
+                                        dcc.Tab(
+                                            label="GDP & Mortality",
+                                            value="tab-gdp",
+                                            children=[
+                                                dbc.Row(
+                                                    dbc.Col(
+                                                        dbc.Card(
+                                                            [
+                                                                dbc.CardHeader(
+                                                                    "GDP vs Mortality Bubble Chart",
+                                                                    className="fw-bold",
+                                                                ),
+                                                                dbc.CardBody(
+                                                                    dcc.Graph(
+                                                                        figure=create_gdp_mortality_bubble(
+                                                                            snapshot
+                                                                        ),
+                                                                        style={
+                                                                            "height": "500px"
+                                                                        },
+                                                                    )
+                                                                ),
+                                                            ],
+                                                            className="shadow-sm",
+                                                        ),
+                                                        width=12,
+                                                        className="mb-3",
+                                                    ),
+                                                    className="mt-2",
+                                                ),
+                                            ],
                                         ),
                                     ],
-                                    className="g-3",
-                                ),
-                                dbc.Row(
-                                    dbc.Col(
-                                        dbc.Card(
-                                            dbc.CardBody(
-                                                dcc.Graph(
-                                                    figure=create_continent_stacked_area(
-                                                        df
-                                                    ),
-                                                    style={"height": "380px"},
-                                                )
-                                            ),
-                                            className="shadow-sm",
-                                        ),
-                                        width=12,
-                                        className="mb-3",
-                                    )
-                                ),
-                                dbc.Row(
-                                    dbc.Col(
-                                        dbc.Card(
-                                            dbc.CardBody(
-                                                dcc.Graph(
-                                                    figure=create_gdp_mortality_bubble(
-                                                        snapshot
-                                                    ),
-                                                    style={"height": "450px"},
-                                                )
-                                            ),
-                                            className="shadow-sm",
-                                        ),
-                                        width=12,
-                                        className="mb-3",
-                                    )
                                 ),
                             ],
                             id="global-content",
@@ -445,17 +521,15 @@ def update_country_charts(selected_country):
     ],
     [
         Input("sidebar-toggle", "n_clicks"),
-        Input("sidebar-toggle-global", "n_clicks"),
     ],
     prevent_initial_call=False,
 )
-def toggle_sidebar(n_clicks_country, n_clicks_global):
+def toggle_sidebar(n_clicks):
     ctx = callback_context
     if not ctx.triggered:
         return {"display": "none"}, 12, 12
 
-    n_total = (n_clicks_country or 0) + (n_clicks_global or 0)
-    if n_total % 2 == 1:
+    if n_clicks and n_clicks % 2 == 1:
         return {}, 12, 9
     return {"display": "none"}, 12, 12
 
