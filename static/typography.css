@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
-* {
+body {
   font-family:
     "Inter",
     system-ui,
@@ -10,17 +10,20 @@
     Ubuntu,
     Cantarell,
     sans-serif;
-}
 
-body {
   font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
 h2,
-h3,
+h3 {
+  letter-spacing: -0.02em;
+}
+
 h4,
 h5,
 h6 {
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
